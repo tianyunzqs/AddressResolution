@@ -198,6 +198,13 @@ def _load_dict():
         if item['post_code']:
             add_post_code(item['province_name'], item['city_name'], item['county_name'], item['post_code'])
 
+    # 将地点词强制分开，如：天津开发区 --> 天津 开发区
+    all_address_words = list(province.keys()) + list(city_province.keys()) + list(county_city_province.keys())
+    for word, _ in seg_tokenizer.FREQ.items():
+        word_splits = list(filter(None, re.split(r'(%s)' % '|'.join(all_address_words), word)))
+        if len(word_splits) >= 2:
+            seg_tokenizer.suggest_freq(tuple(word_splits), tune=True)
+
 
 _load_dict()
 seg_tokenizer.initialize()
@@ -360,6 +367,9 @@ def query_post_code(location):
 
 
 if __name__ == '__main__':
+    print(resolution('天津开发区明园路2号B2别墅5号'))
+
+    # 测试
     print(resolution('湖北武汉东西湖区金银潭医院'))
     print(resolution('台湾台北市松山区台北松山机场'))
     add_province('台湾省')
